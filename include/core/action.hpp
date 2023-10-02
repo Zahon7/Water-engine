@@ -3,6 +3,8 @@
 
 #include <string>
 #include <raylib.h>
+#include <filesystem>
+
 #include "customui.hpp"
 #include "scene.hpp"
 #include "stringutils.hpp"
@@ -12,16 +14,34 @@
 namespace Action {
 
 void NewModel() {
-	CustomUI::DrawWindow("Open model", Vector2 {GetScreenWidth() / 2.2f, GetScreenHeight() / 1.7f});
+	CustomUI::DrawWindow("Open model", Vector2 {GetScreenWidth() / 1.8f, GetScreenHeight() / 1.4f});
 
-	CustomUI::DrawFilePicker("openModelPicker", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.15f});
+	CustomUI::DrawFilePicker("openModelPicker", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f - (GetScreenHeight() / 22.f)}, Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f});
+	
+	CustomUI::DrawInput("name", Vector2 {GetScreenWidth() / 2.f - (GetScreenWidth() / 7.5f), GetScreenHeight() / 2.f + (GetScreenHeight() / 3.6f)});
 
-	if(CustomUI::DrawButton("Cancel", Vector2 {GetScreenWidth() / 2.f - (GetScreenWidth() / 11.f), GetScreenHeight() / 1.375f})) CustomUI::Disable();
+	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f + (GetScreenWidth() / 7.5f), GetScreenHeight() / 2.f + (GetScreenHeight() / 3.6f)}) && !CustomUI::filePickers["openModelPicker"].input.empty()) {
+		std::string modelPath = CustomUI::filePickers["openModelPicker"].input;
+		std::string exportPath = UiDef::project + "/export/" + modelPath.substr(modelPath.find_last_of("/\\") + 1);
+		
+		std::filesystem::copy(modelPath, exportPath);
 
-	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f + (GetScreenWidth() / 11.f), GetScreenHeight() / 1.375f}) && CustomUI::filePickers["openModelPicker"].input != "") {
-		Scene::NewObject(CustomUI::inputs["name"].input, LoadModel(CustomUI::filePickers["openModelPicker"].input.c_str()), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		Scene::NewObject(CustomUI::inputs["name"].input, LoadModel(modelPath.c_str()), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		Scene::scene->Find(CustomUI::inputs["name"].input)->modelPath = exportPath;
 		CustomUI::Disable();
 	}
+}
+
+void _ProcessNodeMesh(Scene::Context *node, Mesh mesh) {
+	std::string numbers;
+	for(int _ = 0; _ < 10; _ ++) {
+		numbers += std::to_string(rand() % 10);
+	}
+
+	std::string path = UiDef::project + "/export/" + node->name + "-" + numbers + ".obj";
+
+	ExportMesh(mesh, path.c_str());
+	node->modelPath = path.substr(path.find_last_of("/\\") + 1);
 }
 
 void NewPlane() {
@@ -38,6 +58,9 @@ void NewPlane() {
 		std::vector<float> resolution = StringUtils::GetFloatVector(CustomUI::inputs["resolution"].input, 2);
 		Mesh mesh = GenMeshPlane(scale[0], scale[1], resolution[0], resolution[1]);
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -53,6 +76,9 @@ void NewCube() {
 		std::vector<float> size = StringUtils::GetFloatVector(CustomUI::inputs["size"].input, 3);
 		Mesh mesh = GenMeshCube(size[0], size[1], size[2]);
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -71,6 +97,9 @@ void NewSphere() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshSphere(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["rings"].input), std::stof(CustomUI::inputs["slices"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -89,6 +118,9 @@ void NewCylinder() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshCylinder(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["height"].input), std::stof(CustomUI::inputs["slices"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -107,6 +139,9 @@ void NewCone() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshCone(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["height"].input), std::stof(CustomUI::inputs["slices"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -125,6 +160,9 @@ void NewHemiSphere() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshHemiSphere(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["rings"].input), std::stof(CustomUI::inputs["slices"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -145,6 +183,9 @@ void NewTorus() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f + (GetScreenWidth() / 7.5f), GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshTorus(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["size"].input), std::stof(CustomUI::inputs["radSeg"].input), std::stof(CustomUI::inputs["sides"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -165,6 +206,9 @@ void NewKnot() {
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f + (GetScreenWidth() / 7.5f), GetScreenHeight() / 2.f + (GetScreenHeight() / 6.5f)})) {
 		Mesh mesh = GenMeshKnot(std::stof(CustomUI::inputs["radius"].input), std::stof(CustomUI::inputs["size"].input), std::stof(CustomUI::inputs["radSeg"].input), std::stof(CustomUI::inputs["sides"].input));
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -181,6 +225,9 @@ void NewHeightmap() {
 		Mesh mesh = GenMeshHeightmap(LoadImage(CustomUI::filePickers["imagePicker"].input.c_str()), Vector3 {size[0], size[1], size[2]});
 
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -197,6 +244,9 @@ void NewCubicmap() {
 		Mesh mesh = GenMeshCubicmap(LoadImage(CustomUI::filePickers["imagePicker"].input.c_str()), Vector3 {size[0], size[1], size[2]});
 
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -214,6 +264,9 @@ void NewPolygonal() {
 		Mesh mesh = GenMeshPoly(std::stof(CustomUI::inputs["sides"].input), std::stof(CustomUI::inputs["radius"].input));
 		
 		Scene::NewObject(CustomUI::inputs["name"].input, LoadModelFromMesh(mesh), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		
+		_ProcessNodeMesh(Scene::scene->Find(CustomUI::inputs["name"].input), mesh);
+
 		CustomUI::Disable();
 	}
 }
@@ -302,7 +355,7 @@ void Activate(std::string actionString) {
 	} else if(actionString == "New.From model") {
 		if(!UiDef::project.empty()) {
 			CustomUI::AddFilePicker("openModelPicker", UiDef::project, R"""(.*\.(obj|gltf|iqm|vox|m3d)$)""");
-			CustomUI::AddFilePicker("openTexturePicker", UiDef::project, R"""(.*\.(obj|gltf|iqm|vox|m3d)$)""");
+			CustomUI::AddInput("name", "Name");
 			CustomUI::Enable(NewModel);
 		} else {
 			CustomUI::Enable(std::bind(CustomUI::InfoDialog, "Error: no project loaded"));

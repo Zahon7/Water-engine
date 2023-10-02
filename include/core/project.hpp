@@ -14,6 +14,7 @@ namespace Project {
 
 void New(std::string name) {
 	mkdir(("../projects/" + name).c_str(), 0777);
+	mkdir(("../projects/" + name + "/export").c_str(), 0777);
 	UiDef::project = "../projects/" + name;
 	
 	SetWindowTitle(("Water engine - " + name).c_str());

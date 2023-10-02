@@ -1,0 +1,2 @@
+- You must include a name for creating a new model
+- Export model path variable is set now
