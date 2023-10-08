@@ -24,24 +24,6 @@ Camera3D camera;
 
 	namespace Scene {
 
-	struct BoundaryInfo {
-		BoundingBox boundaries;
-		Vector3 size;
-
-		void CalculateSize() {
-			size = {
-				boundaries.max.x - boundaries.min.x,
-				boundaries.max.y - boundaries.min.y,
-				boundaries.max.z - boundaries.min.z
-			};
-		} 
-
-		void FromModel(Model model) {
-			boundaries = GetModelBoundingBox(model);
-			CalculateSize();
-		};
-	};
-
 	class BaseComponent {
 	public:
 		virtual ~BaseComponent() {};
@@ -65,15 +47,11 @@ Camera3D camera;
 
 		Color tint = WHITE;
 
-		BoundaryInfo boundaries;
-
 		Vector3 position = {0.0f, 0.0f, 0.0f};
 		Vector3 scale = {1.0f, 1.0f, 1.0f};
 		Vector3 rotation = {0.0f, 0.0f, 0.0f};
 
 		Matrix transform = MatrixIdentity();
-
-		std::string modelPath;
 
 		void FromModel(Model model) {
 			// boundaries = BoundaryInfo{model};
@@ -266,8 +244,13 @@ void DrawFunction(Scene::Context &node) {
 	}
 }
 
+$(SCRIPTS)
+
 int main() {
 	InitWindow(1000, 600, "Water engine window");
+	
+	Scene::scene = new Scene::Context();
+	Scene::scene->name = "Scene";
 	
 	Camera camera;
 

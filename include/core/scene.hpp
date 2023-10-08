@@ -21,26 +21,9 @@
 
 namespace Scene {
 
-struct BoundaryInfo {
-	BoundingBox boundaries;
-	Vector3 size;
-
-	void CalculateSize() {
-		size = {
-			boundaries.max.x - boundaries.min.x,
-			boundaries.max.y - boundaries.min.y,
-			boundaries.max.z - boundaries.min.z
-		};
-	} 
-
-	void FromModel(Model model) {
-		boundaries = GetModelBoundingBox(model);
-		CalculateSize();
-	};
-};
-
 class BaseComponent {
 public:
+	virtual std::string ToString(std::string parent) {return 0;};
 	virtual ~BaseComponent() {};
 };
 
@@ -62,15 +45,11 @@ public:
 
 	Color tint = WHITE;
 
-	BoundaryInfo boundaries;
-
 	Vector3 position = {0.0f, 0.0f, 0.0f};
 	Vector3 scale = {1.0f, 1.0f, 1.0f};
 	Vector3 rotation = {0.0f, 0.0f, 0.0f};
 
 	Matrix transform = MatrixIdentity();
-
-	std::string modelPath;
 
 	void FromModel(Model model) {
 		// boundaries = BoundaryInfo{model};
@@ -222,11 +201,11 @@ void NewScript(std::string name, Context *at = scene) {
 	scriptNode.path.push_back(name);
 
 	ScriptComponent *component = new ScriptComponent();
-	component->content = "Init(Context &self) {\n"
+	component->content = "void Init(Scene::Context *self) {\n"
 						 "    // Write your init code here\n"
 						 "}\n"
 						 "\n"
-						 "Update(Context& self) {\n"
+						 "void Update(Scene::Context *self) {\n"
 						 "    // Write you update code here\n"
 						 "}\n";
 	scriptNode.components["ScriptComponent"] = component;

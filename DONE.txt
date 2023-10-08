@@ -1,2 +1,3 @@
-- You must include a name for creating a new model
-- Export model path variable is set now
+- Windows build
+- Exported executable doesn't crash now
+- Exporting properties

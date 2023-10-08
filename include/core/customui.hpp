@@ -9,7 +9,20 @@
 #include "erl.cpp"
 
 #include <sys/stat.h>
-#include <filesystem>
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __cplusplus >= 201703L && __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  elif __has_include(<boost/filesystem.hpp>)
+#    include <boost/filesystem.hpp>
+     namespace fs = boost::filesystem;
+#  endif
+#endif
 #include <regex>
 
 namespace CustomUI {
@@ -110,10 +123,10 @@ void DrawFilePicker(std::string id, Vector2 center, Vector2 size = {GetScreenWid
 	DrawRectangleLinesEx(rectangle, 2.5f, OUTLINE_COLOR);
 
 	float yPointer = rectangle.y;
-	for (const auto& entry : std::filesystem::directory_iterator(filePickers[id].path)) {
+	for (const auto& entry : fs::directory_iterator(filePickers[id].path)) {
 		std::regex regex(filePickers[id].filter);
 		std::smatch match;
-		std::string path = entry.path().u8string();
+		std::string path = entry.path().string();
 		if(!std::regex_search(path, match, regex)) continue;
 
 		Rectangle pathRectangle = {
@@ -126,10 +139,10 @@ void DrawFilePicker(std::string id, Vector2 center, Vector2 size = {GetScreenWid
         DrawRectangleRec(pathRectangle, BACKGROUND_COLOR);
         DrawRectangleLinesEx(pathRectangle, 2.5f, filePickers[id].input == entry.path() ? SELECTED_COLOR : OUTLINE_COLOR);
 
-        Erl::DrawTextCentered(UiDef::font, entry.path().c_str(), Vector2 {pathRectangle.x + pathRectangle.width / 2.f, pathRectangle.y + pathRectangle.height / 2.f}, Erl::FontSize(512.f / entry.path().u8string().length()), 1.f, BLACK);
+        Erl::DrawTextCentered(UiDef::font, path.c_str(), Vector2 {pathRectangle.x + pathRectangle.width / 2.f, pathRectangle.y + pathRectangle.height / 2.f}, Erl::FontSize(512.f / entry.path().u8string().length()), 1.f, BLACK);
 
         if(CheckCollisionPointRec(GetMousePosition(), pathRectangle) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        	filePickers[id].input = entry.path();
+        	filePickers[id].input = entry.path().string();
         }
 
         yPointer += 35.f;

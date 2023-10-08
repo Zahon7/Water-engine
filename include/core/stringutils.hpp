@@ -63,5 +63,38 @@ namespace StringUtils {
 	std::string ToString(Vector4 position) {
 		return std::string(TextFormat("Vector4 {%ff, %ff, %ff, %ff}", position.x, position.y, position.z, position.w));
 	}
+
+	std::string ToString(float value) {
+		return std::string(TextFormat("%ff", value));
+	}
+
+	std::string ToString(Color color) {
+		return std::string(TextFormat("Color {%u, %u, %u, %u}", color.r, color.g, color.b, color.a));
+	}
+
+	std::string ToString(Matrix matrix) {
+		return std::string(TextFormat("Matrix {%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f}",
+			matrix.m0, matrix.m4, matrix.m8, matrix.m12,
+			matrix.m1, matrix.m5, matrix.m9, matrix.m13,
+			matrix.m2, matrix.m6, matrix.m10, matrix.m14,
+			matrix.m3, matrix.m7, matrix.m11, matrix.m15
+		));
+	}
+
+	std::string EscapeString(std::string string) {
+		std::string output = string;
+
+		output = StringReplace(output, "\"", "\\\"");
+		output = StringReplace(output, "'", "\\'");
+
+		output = StringReplace(output, "\n", "\\n");
+		output = StringReplace(output, "\t", "\\t");
+
+		return output;
+	}
+
+	std::string ToString(std::string string) {
+		return EscapeString(string);
+	}
 };
 #endif

@@ -23,9 +23,7 @@ int main() {
 	Scene::scene = new Scene::Context();
 	Scene::scene->name = "Scene";
 	Scene::scene->path = {"Scene"};
-
-	Scene::NewObject("Object #1", LoadModelFromMesh(GenMeshCube(0.5f, 0.5f, 0.5f)), Vector3Zero(), Vector3One(), Vector3Zero(), RED);
-
+	
 	Vector2 oldResolution = {1000.0f, 600.0f}; 
 
 	UiDef::Calculate();
@@ -42,7 +40,7 @@ int main() {
 		Scene::NewObject("Camera", LoadModel("engine/camera.obj"), UiDef::camera.position, Vector3One(), Vector3Zero(), WHITE);
 		Scene::Context *cameraContext = Scene::scene->Find("Camera");
 
-		Scene::NewScript("Script 01", Scene::scene->Find("Camera"));
+		Scene::NewScript("Script", Scene::scene->Find("Camera"));
 
 		Scene::CameraComponent* cameraComponent = new Scene::CameraComponent();
 		cameraComponent->position = UiDef::camera.position;

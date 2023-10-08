@@ -13,8 +13,13 @@
 namespace Project {
 
 void New(std::string name) {
-	mkdir(("../projects/" + name).c_str(), 0777);
-	mkdir(("../projects/" + name + "/export").c_str(), 0777);
+	#ifndef __WIN32
+		mkdir(("../projects/" + name).c_str(), 0777);
+		mkdir(("../projects/" + name + "/export").c_str(), 0777);
+	#else
+		mkdir(("../projects/" + name).c_str());
+		mkdir(("../projects/" + name + "/export").c_str());
+	#endif
 	UiDef::project = "../projects/" + name;
 	
 	SetWindowTitle(("Water engine - " + name).c_str());

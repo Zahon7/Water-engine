@@ -3,7 +3,22 @@
 
 #include <string>
 #include <raylib.h>
-#include <filesystem>
+
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __cplusplus >= 201703L && __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  elif __has_include(<boost/filesystem.hpp>)
+#    include <boost/filesystem.hpp>
+     namespace fs = boost::filesystem;
+#  endif
+#endif
+
 
 #include "customui.hpp"
 #include "scene.hpp"
@@ -22,11 +37,12 @@ void NewModel() {
 
 	if(CustomUI::DrawButton("Ok", Vector2 {GetScreenWidth() / 2.f + (GetScreenWidth() / 7.5f), GetScreenHeight() / 2.f + (GetScreenHeight() / 3.6f)}) && !CustomUI::filePickers["openModelPicker"].input.empty()) {
 		std::string modelPath = CustomUI::filePickers["openModelPicker"].input;
-		std::string exportPath = UiDef::project + "/export/" + modelPath.substr(modelPath.find_last_of("/\\") + 1);
-		
-		std::filesystem::copy(modelPath, exportPath);
+		std::string exportPath = "export/" + modelPath.substr(modelPath.find_last_of("/\\") + 1);
+		std::string exportPathFull = UiDef::project + "/" + exportPath;
 
-		Scene::NewObject(CustomUI::inputs["name"].input, LoadModel(modelPath.c_str()), Vector3Zero(), Vector3One(), Vector3Zero(), WHITE);
+		fs::copy(modelPath, exportPathFull, fs::copy_options::overwrite_existing);
+
+		Scene::NewObject(CustomUI::inputs["name"].input, LoadModel(modelPath.c_str()), Vector3Zero(), Vector3One(), Vector3Zero(), RED);
 		Scene::scene->Find(CustomUI::inputs["name"].input)->modelPath = exportPath;
 		CustomUI::Disable();
 	}
