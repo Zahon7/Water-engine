@@ -53,18 +53,165 @@ int main() {
 	SetExitKey(0);
 
 	while(!WindowShouldClose()) {
+		float fontSize = Erl::FontSize(18.f);
+
 		BeginTextureMode(UiDef::mainRender); {
-			ClearBackground(WHITE);
+			switch(UiDef::mainType) {
+				case UiDef::MainSceneType::SCENE: {
+					ClearBackground(WHITE);
 
-			if(sceneSelected && UiDef::mainType == UiDef::MainSceneType::SCENE)
-				UpdateCamera(&UiDef::camera, CAMERA_FREE);
-			
-			BeginMode3D(UiDef::camera); {
-				DrawGrid(10, 1);
-				Scene::DrawScene();
-			} EndMode3D();
+					if(sceneSelected && UiDef::mainType == UiDef::MainSceneType::SCENE)
+						UpdateCamera(&UiDef::camera, CAMERA_FREE);
+					
+					BeginMode3D(UiDef::camera); {
+						DrawGrid(10, 1);
+						Scene::DrawScene();
+					} EndMode3D();
 
-			Scene::DrawSceneTags();
+					Scene::DrawSceneTags();
+					break;
+				}
+
+				case UiDef::MainSceneType::CODE: {
+					ClearBackground(WHITE);
+
+					DrawRectangleRec(UiDef::main, WHITE);
+
+					Rectangle bar {
+						0.f,
+						0.f,
+						UiDef::main.width,
+						UiDef::main.height / 16.f
+					};
+
+					Rectangle downBar {
+						0.f,
+						UiDef::main.height - UiDef::main.height / 16.f,
+						UiDef::main.width - UiDef::main.height / 16.f,
+						UiDef::main.height / 16.f
+					};
+
+					Rectangle rightBar {
+						UiDef::main.width - UiDef::main.height / 16.f,
+						bar.height,
+						UiDef::main.height / 16.f,
+						UiDef::main.height - UiDef::main.height / 16.f - bar.height
+					};
+
+					Rectangle render {
+						0.f,
+						bar.y + bar.height,
+						UiDef::main.width,
+						UiDef::main.height - bar.height
+					};
+
+					std::vector<std::string> wrapped = UiDef::codePointer.lines;
+
+					std::vector<std::string> pointerStringWrapped = wrapped;
+
+					int index = 0;
+					int i = 0;
+					for(std::string &line : pointerStringWrapped) {
+						for(int j = 0; j < line.length() + 1; j++) {
+							line[j] = ' ';
+							if(i >= UiDef::codePointer.line && j >= UiDef::codePointer.character) {
+								goto quit;
+							}
+							
+							index++;
+						}
+						i++;
+					}
+
+					quit: {
+						
+					}
+
+					std::string joined = StringUtils::StringJoin(pointerStringWrapped, "\n");
+
+					for(; joined.length() != index ;) {
+						joined.erase(joined.begin() + index);
+					}
+					pointerStringWrapped = StringUtils::StringSplit(joined, "\n");
+
+					if(updateTick > maxUpdateTick / 2.f)
+						pointerStringWrapped.back() += "|";
+
+					Erl::DrawLinesSmartL(UiDef::font, pointerStringWrapped, Vector2 {render.x - 1.f + UiDef::codeOffset.x, render.y + 5.f + UiDef::codeOffset.y}, Erl::FontSize(25.f), 1.f, BLACK);
+
+					StringUtils::CodeColorsLines colorLines = StringUtils::CppColorify(wrapped, StringUtils::CodeKeywords {{"void"}, {}, {"Scene::Context", "self->"}});
+					
+					Erl::DrawLinesSmartL(UiDef::font, colorLines.white, Vector2 {render.x + 5.f + UiDef::codeOffset.x, render.y + 5.f + UiDef::codeOffset.y}, Erl::FontSize(25.f), 1.f, BLACK);
+					Erl::DrawLinesSmartL(UiDef::font, colorLines.red, Vector2 {render.x + 5.f + UiDef::codeOffset.x, render.y + 5.f + UiDef::codeOffset.y}, Erl::FontSize(25.f), 1.f, RED);
+					Erl::DrawLinesSmartL(UiDef::font, colorLines.green, Vector2 {render.x + 5.f + UiDef::codeOffset.x, render.y + 5.f + UiDef::codeOffset.y}, Erl::FontSize(25.f), 1.f, DARKGREEN);
+					Erl::DrawLinesSmartL(UiDef::font, colorLines.blue, Vector2 {render.x + 5.f + UiDef::codeOffset.x, render.y + 5.f + UiDef::codeOffset.y}, Erl::FontSize(25.f), 1.f, BLUE);
+
+					Vector2 measured = Erl::hqMeasureTextExSmart(UiDef::font, wrapped, Erl::FontSize(25.f), 1.f);
+
+					char character = GetCharPressed();
+
+					if(IsKeyPressed(KEY_BACKSPACE) || (IsKeyPressedRepeat(KEY_BACKSPACE) && IsKeyDown(KEY_BACKSPACE))) {
+						UiDef::codePointer.Delete();
+					} else if(character > 0) {
+						UiDef::codePointer.Insert(character);
+					}
+
+					if(IsKeyPressed(KEY_ENTER)) {
+						UiDef::codePointer.Insert('\n');
+					}
+
+					if(IsKeyPressed(KEY_LEFT) || (IsKeyPressedRepeat(KEY_LEFT) && IsKeyDown(KEY_LEFT))) {
+						UiDef::codePointer.Backwards(1);
+					} else if(IsKeyPressed(KEY_RIGHT) || (IsKeyPressedRepeat(KEY_RIGHT) && IsKeyDown(KEY_RIGHT))) {
+						UiDef::codePointer.Forward(1);
+					} else if(IsKeyPressed(KEY_UP) || (IsKeyPressedRepeat(KEY_UP) && IsKeyDown(KEY_UP))) {
+						UiDef::codePointer.JumpUp();
+					} else if(IsKeyPressed(KEY_DOWN) || (IsKeyPressedRepeat(KEY_DOWN) && IsKeyDown(KEY_DOWN))) {
+						UiDef::codePointer.JumpDown();
+					}
+
+					DrawRectangleRec(bar, Color {245, 245, 245, 245});
+					DrawLineEx(Vector2 {bar.x, bar.y + bar.height}, Vector2 {bar.x + bar.width, bar.y + bar.height}, 1.5f, BLACK);
+
+					Erl::DrawTextCentered(UiDef::font, UiDef::codeSrc.empty() ? "Unnamed file" : UiDef::codeSrc, Vector2 {bar.x + bar.width / 2.f, bar.y + bar.height / 2.f}, fontSize, 1.f, BLACK);
+					
+					if(IsKeyDown(KEY_LEFT_SHIFT)) {
+						UiDef::codeOffset.x += GetMouseWheelMove() * 10.f;
+					} else {
+						UiDef::codeOffset.y += GetMouseWheelMove() * 10.f;
+					}
+
+					if(UiDef::codeOffset.x > 0) UiDef::codeOffset.x = 0.f;
+					if(UiDef::codeOffset.y > 0) UiDef::codeOffset.y = 0.f;
+
+					if(UiDef::codeOffset.y < -measured.y) UiDef::codeOffset.y = -measured.y;
+					if(UiDef::codeOffset.x < -measured.x) UiDef::codeOffset.x = -measured.x;
+
+					DrawRectangleRec(downBar, Color {245, 245, 245, 245});
+					DrawRectangleLinesEx(downBar, 1.5f, BLACK);
+
+					Rectangle downPointer = {downBar.x - Remap(UiDef::codeOffset.x, 0.f, measured.x, 0.f, downBar.width - downBar.height), downBar.y, downBar.height, downBar.height};
+					Vector2 mousePosition = Vector2Subtract(GetMousePosition(), {UiDef::main.x, UiDef::main.y});
+
+					if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, downBar)) {
+						UiDef::codeOffset.x = -Remap(mousePosition.x, downBar.x, downBar.x + downBar.width, -downPointer.width / 2.f, downBar.width + downBar.height / 2.f - downPointer.width / 2.f);
+					}
+
+					DrawRectangleRec(downPointer, BLACK);
+
+					DrawRectangleRec(rightBar, Color {245, 245, 245, 245});
+					DrawRectangleLinesEx(rightBar, 1.5f, BLACK);
+
+					Rectangle rightPointer = {rightBar.x, rightBar.y - Remap(UiDef::codeOffset.y, 0.f, measured.y, 0.f, rightBar.height - rightBar.width), rightBar.width, rightBar.width};
+					if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mousePosition, rightBar)) {
+						UiDef::codeOffset.y = -Remap(mousePosition.y, rightBar.y, rightBar.y + rightBar.height, -rightPointer.width / 2.f, rightBar.height - rightBar.width * 3.75f - rightPointer.width / 2.f);
+					}
+					
+					DrawRectangleRec(rightPointer, BLACK);
+
+					break;
+				}
+			}
 		} EndTextureMode();
 
 		BeginDrawing(); {
@@ -88,8 +235,6 @@ int main() {
 			}
 
 			DrawLineEx(Vector2 {UiDef::main.x, UiDef::main.y}, Vector2 {UiDef::main.x + UiDef::main.width, UiDef::main.y}, 2.0f, BLACK);
-
-			float fontSize = Erl::FontSize(18.f);
 
 			for(int index = 0; index < UiDef::_LAST; index++) {
 				float size = GetScreenWidth() / 16.f;
@@ -126,66 +271,8 @@ int main() {
 				}
 			}
 
-			switch(UiDef::mainType) {
-				case UiDef::MainSceneType::SCENE: {
-					DrawTexturePro(UiDef::mainRender.texture, Rectangle {0, 0, (float)UiDef::mainRender.texture.width, (float)-UiDef::mainRender.texture.height},
-						UiDef::main, Vector2 {0, 0}, 0.0f, WHITE);
-					break;
-				}
-				case UiDef::MainSceneType::CODE: {
-					DrawRectangleRec(UiDef::main, WHITE);
-
-					Rectangle bar {
-						UiDef::main.x,
-						UiDef::main.y,
-						UiDef::main.width,
-						UiDef::main.height / 16.f
-					};
-
-					DrawRectangleRec(bar, Color {245, 245, 245, 245});
-					DrawLineEx(Vector2 {bar.x, bar.y + bar.height}, Vector2 {bar.x + bar.width, bar.y + bar.height}, 1.5f, BLACK);
-
-					Erl::DrawTextCentered(UiDef::font, UiDef::codeSrc.empty() ? "Unnamed file" : UiDef::codeSrc, Vector2 {bar.x + bar.width / 2.f, bar.y + bar.height / 2.f}, fontSize, 1.f, BLACK);
-
-					Rectangle render {
-						UiDef::main.x,
-						bar.y + bar.height,
-						UiDef::main.width,
-						UiDef::main.height - bar.height
-					};
-
-					std::string textToDraw = UiDef::codeContent;
-					if(updateTick > maxUpdateTick / 2.f) {
-						textToDraw.insert(textToDraw.end() + UiDef::codePointer, '|');
-					}
-
-					Erl::DrawTextWrappedL(UiDef::font, textToDraw, Vector2 {render.x + 5.f, render.y + 5.f}, Erl::FontSize(35.f), 1.f, BLACK, render.width);
-					
-					char character = GetCharPressed();
-					if(character > 0) {
-						UiDef::codeContent.insert(UiDef::codeContent.end() + UiDef::codePointer, character);
-					}
-
-					if(IsKeyPressed(KEY_BACKSPACE) || (IsKeyPressedRepeat(KEY_BACKSPACE) && IsKeyDown(KEY_BACKSPACE))) {
-						if(!UiDef::codeContent.empty())
-							UiDef::codeContent.erase(UiDef::codeContent.length() - 1 + UiDef::codePointer, 1);
-					}
-
-					if(IsKeyPressed(KEY_ENTER)) {
-						UiDef::codeContent.insert(UiDef::codeContent.end() + UiDef::codePointer, '\n');
-					}
-
-					if(IsKeyPressed(KEY_LEFT) || (IsKeyPressedRepeat(KEY_LEFT) && IsKeyDown(KEY_LEFT))) {
-						if(UiDef::codeContent.length() + UiDef::codePointer > 0)
-							UiDef::codePointer--;
-					} else if(IsKeyPressed(KEY_RIGHT) || (IsKeyPressedRepeat(KEY_RIGHT) && IsKeyDown(KEY_RIGHT))) {
-						if(UiDef::codePointer < 0)
-							UiDef::codePointer++;
-					}
-
-					break;
-				}
-			}
+			DrawTexturePro(UiDef::mainRender.texture, Rectangle {0, 0, (float)UiDef::mainRender.texture.width, (float)-UiDef::mainRender.texture.height},
+						   UiDef::main, Vector2 {0, 0}, 0.0f, WHITE);
 
 			Erl::DrawTextWrappedL(UiDef::font, UiDef::consoleContent, Vector2Zero(), Erl::FontSize(25.f), 1.0f, BLACK, 25.f + UiDef::main.width + UiDef::nodeExplorer.width);
 

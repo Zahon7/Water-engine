@@ -265,20 +265,20 @@ void DrawSceneNode(Context &node) {
 	float y = (GetScreenHeight() + GetScreenWidth()) / 64.f;
 
 	Rectangle rectangle {
-		UiDef::nodeExplorer.x + nodeDepth, yPointer * y + UiDef::nodeExplorer.y, UiDef::nodeExplorer.width - nodeDepth, y
+		UiDef::nodeExplorer.x + nodeDepth, yPointer * (y * 1.1f) + UiDef::nodeExplorer.y, UiDef::nodeExplorer.width - nodeDepth, y
 	};
 
 	if(node.components.count("DrawableComponent")) {
 		DrawableComponent *drawable = dynamic_cast<DrawableComponent*>(node.components["DrawableComponent"]);
 		if(drawable != nullptr) {
-			DrawRectangleRec(rectangle, Color {(unsigned char)((drawable->tint.r + 255) / 2), (unsigned char)((drawable->tint.g + 255) / 2),
+			DrawRectangleRounded(rectangle, 0.2f, 10, Color {(unsigned char)((drawable->tint.r + 255) / 2), (unsigned char)((drawable->tint.g + 255) / 2),
 										       (unsigned char)((drawable->tint.b + 255) / 2), (unsigned char)((drawable->tint.a + 255) / 2)});
 		}
 	} else if(node.components.count("ScriptComponent")) {
-		DrawRectangleRec(rectangle, GREEN);
+		DrawRectangleRounded(rectangle, 0.2f, 10, GREEN);
 	}
 
-	DrawRectangleLinesEx(rectangle, 1.5f, BLACK);
+	DrawRectangleRoundedLines(rectangle, 0.2f, 10, 1.5f, BLACK);
 
 	DrawTextEx(UiDef::font, node.name.c_str(), Vector2 {rectangle.x + 3.f, rectangle.y + 1.f}, 25.f, 1.0, BLACK);
 
@@ -302,8 +302,11 @@ void DrawSceneNode(Context &node) {
 		int gesture = GetGestureDetected();
 		if(node.components.count("ScriptComponent") && CheckCollisionPointRec(GetMousePosition(), rectangle) && gesture == GESTURE_DOUBLETAP) {
 			ScriptComponent *script = dynamic_cast<ScriptComponent*>(node.components["ScriptComponent"]);
-			UiDef::codeContent = script->content;
-			UiDef::codePointer = 0;
+			UiDef::codePointer.LoadFrom(script->content);
+			
+			UiDef::codePointer.line = 0;
+			UiDef::codePointer.character = 0;
+
 			UiDef::codeSrc = StringUtils::StringJoin(node.path, "->");
 
 			UiDef::mainType = UiDef::MainSceneType::CODE;

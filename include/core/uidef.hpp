@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <vector>
 #include <string>
+#include "stringutils.hpp"
 
 namespace UiDef {
 	enum MainSceneType {SCENE = 0, CODE, _LAST};
@@ -20,6 +21,7 @@ namespace UiDef {
 
 	Rectangle mainBar;
 	Rectangle main;
+	Vector2 codeOffset;
 
 	Rectangle nodeExplorer;
 	Rectangle topBar;
@@ -30,8 +32,8 @@ namespace UiDef {
 
 	std::string consoleContent;
 
-	std::string codeContent = "";
-	int codePointer = 0; // codeContent.length() + codePointer
+	std::vector<std::string> codeLines = {""};
+	StringUtils::CodePointer codePointer; // .x = line, .y = character
 
 	std::string codeSrc = "";
 
@@ -44,12 +46,15 @@ namespace UiDef {
 
 		splitLines.clear();
 
+		/* --------- SETTING UP ---------- */
+		codePointer.lines = codeLines;
+
 		/* -------- SCENE RECTANGLES -------- */
 
 		topBar = Rectangle {
 			0, 0,
 			(float)GetScreenWidth(),
-			GetScreenHeight() / 15.f
+			GetScreenHeight() / 25.f
 		};
 
 		console = Rectangle {
@@ -70,6 +75,8 @@ namespace UiDef {
 			GetScreenWidth() - (GetScreenWidth() / 2.0f),
 			GetScreenHeight() - (GetScreenHeight() / 2.5f + mainBar.height)
 		};
+
+		codeOffset = Vector2 {0.f, 0.f};
 
 		components = Rectangle {
 			console.width,

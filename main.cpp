@@ -263,8 +263,8 @@ int main() {
 	
 	Camera camera;
 
-	camera.position = Vector3 {10.000000f, 10.000000f, 10.000000f};
-	camera.target = Vector3 {0.000000f, 0.000000f, 0.000000f};
+	camera.position = Vector3 {4.974925f, 17.336287f, -12.443230f};
+	camera.target = Vector3 {6.232415f, 13.059839f, 4.293880f};
 	camera.fovy = 60.000000f;
 	camera.up = Vector3 {0.0f, 1.0f, 0.0f};
 	camera.projection = CAMERA_PERSPECTIVE;
@@ -273,33 +273,33 @@ Scene::NewEmpty("Camera", Scene::scene);
 Scene::scene->Find("Camera")->components["CameraComponent"] = new Scene::CameraComponent();
 Scene::scene->Find("Camera")->components["DrawableComponent"] = new Scene::DrawableComponent();
 Scene::scene->Find("Camera")->modelPath = "Camera";
-Scene::DrawableComponent *drawableComponent_3086 = dynamic_cast<Scene::DrawableComponent*>(Scene::scene->Find("Camera")->components["DrawableComponent"]);
-drawableComponent_3086->model = LoadModel(Scene::scene->Find("Camera")->modelPath.c_str());
-drawableComponent_3086->tint = Color {255, 255, 255, 255};
-drawableComponent_3086->position = Vector3 {10.000000f, 10.000000f, 10.000000f};
-drawableComponent_3086->scale = Vector3 {1.000000f, 1.000000f, 1.000000f};
-drawableComponent_3086->rotation = Vector3 {0.000000f, 0.000000f, 0.000000f};
-drawableComponent_3086->transform = Matrix {1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
-Scene::CameraComponent *cameraComponent_1025 = dynamic_cast<Scene::CameraComponent*>(Scene::scene->Find("Camera")->components["CameraComponent"]);
-cameraComponent_1025->position = Vector3 {10.000000f, 10.000000f, 10.000000f};
-cameraComponent_1025->target = Vector3 {0.000000f, 0.000000f, 0.000000f};
-cameraComponent_1025->fovy = 60.000000f;
+Scene::DrawableComponent *drawableComponent_1662 = dynamic_cast<Scene::DrawableComponent*>(Scene::scene->Find("Camera")->components["DrawableComponent"]);
+drawableComponent_1662->model = LoadModel(Scene::scene->Find("Camera")->modelPath.c_str());
+drawableComponent_1662->tint = Color {255, 255, 255, 255};
+drawableComponent_1662->position = Vector3 {10.000000f, 10.000000f, 10.000000f};
+drawableComponent_1662->scale = Vector3 {1.000000f, 1.000000f, 1.000000f};
+drawableComponent_1662->rotation = Vector3 {0.000000f, 0.000000f, 0.000000f};
+drawableComponent_1662->transform = Matrix {1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
+Scene::CameraComponent *cameraComponent_804 = dynamic_cast<Scene::CameraComponent*>(Scene::scene->Find("Camera")->components["CameraComponent"]);
+cameraComponent_804->position = Vector3 {10.000000f, 10.000000f, 10.000000f};
+cameraComponent_804->target = Vector3 {0.000000f, 0.000000f, 0.000000f};
+cameraComponent_804->fovy = 60.000000f;
 Scene::NewEmpty("Script", Scene::scene->Find("Camera"));
 Scene::scene->Find("Camera")->Find("Script")->components["ScriptComponent"] = new Scene::ScriptComponent();
 Scene::scene->Find("Camera")->Find("Script")->modelPath = "";
-Scene::ScriptComponent *scriptComponent_2153 = dynamic_cast<Scene::ScriptComponent*>(Scene::scene->Find("Camera")->Find("Script")->components["ScriptComponent"]);
-scriptComponent_2153->content = "void Init(Scene::Context *self) {\n    // Write your init code here\n}\n\nvoid Update(Scene::Context *self) {\n    // Write you update code here\n}\n";
+Scene::ScriptComponent *scriptComponent_489 = dynamic_cast<Scene::ScriptComponent*>(Scene::scene->Find("Camera")->Find("Script")->components["ScriptComponent"]);
+scriptComponent_489->content = "void Init(Scene::Context *self) {\n    // Write your init code here\n}\n\nvoid Update(Scene::Context *self) {\n    // Write you update code here\n}\n";
 Scene_Camera_Script::Init(Scene::scene->Find("Camera")->Find("Script")->parent);
-Scene::NewEmpty("c", Scene::scene);
-Scene::scene->Find("c")->components["DrawableComponent"] = new Scene::DrawableComponent();
-Scene::scene->Find("c")->modelPath = "export/church.obj";
-Scene::DrawableComponent *drawableComponent_1414 = dynamic_cast<Scene::DrawableComponent*>(Scene::scene->Find("c")->components["DrawableComponent"]);
-drawableComponent_1414->model = LoadModel(Scene::scene->Find("c")->modelPath.c_str());
-drawableComponent_1414->tint = Color {230, 41, 55, 255};
-drawableComponent_1414->position = Vector3 {0.000000f, 0.000000f, 0.000000f};
-drawableComponent_1414->scale = Vector3 {1.000000f, 1.000000f, 1.000000f};
-drawableComponent_1414->rotation = Vector3 {0.000000f, 0.000000f, 0.000000f};
-drawableComponent_1414->transform = Matrix {1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
+Scene::NewEmpty("church", Scene::scene);
+Scene::scene->Find("church")->components["DrawableComponent"] = new Scene::DrawableComponent();
+Scene::scene->Find("church")->modelPath = "export/church.obj";
+Scene::DrawableComponent *drawableComponent_322 = dynamic_cast<Scene::DrawableComponent*>(Scene::scene->Find("church")->components["DrawableComponent"]);
+drawableComponent_322->model = LoadModel(Scene::scene->Find("church")->modelPath.c_str());
+drawableComponent_322->tint = Color {230, 41, 55, 255};
+drawableComponent_322->position = Vector3 {0.000000f, 0.000000f, 0.000000f};
+drawableComponent_322->scale = Vector3 {1.000000f, 1.000000f, 1.000000f};
+drawableComponent_322->rotation = Vector3 {0.000000f, 0.000000f, 0.000000f};
+drawableComponent_322->transform = Matrix {1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
 
 
 	while(!WindowShouldClose()) {

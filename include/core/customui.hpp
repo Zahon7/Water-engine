@@ -45,8 +45,8 @@ bool enabled = false;
 void DrawWindow(std::string name, Vector2 size = Vector2 {GetScreenWidth() / 1.8f, GetScreenHeight() / 2.f}) {
 	Rectangle rectangle = Erl::GetCenterRectangle(Vector2 {GetScreenWidth() / 2.f, GetScreenHeight() / 2.f}, size);
 
-	DrawRectangleRec(rectangle, WINDOW_BACKGROUND_COLOR);
-	DrawRectangleLinesEx(rectangle, 2.5f, OUTLINE_COLOR);
+	DrawRectangleRounded(rectangle, 0.1f, 10, WINDOW_BACKGROUND_COLOR);
+	DrawRectangleRoundedLines(rectangle, 0.1f, 10, 2.5f, OUTLINE_COLOR);
 
 	DrawTextEx(UiDef::font, name.c_str(), Vector2 {rectangle.x + 5.f, rectangle.y + 5.f}, 25.f, 1.5f, BLACK);
 }
@@ -79,8 +79,8 @@ void DrawInput(std::string id, Vector2 center, Vector2 scale = {GetScreenWidth()
 		}
 	}
 	
-	DrawRectangleRec(rectangle, BACKGROUND_COLOR);
-	DrawRectangleLinesEx(rectangle, 2.5f, over ? SELECTED_COLOR : OUTLINE_COLOR);
+	DrawRectangleRounded(rectangle, 0.2f, 10, BACKGROUND_COLOR);
+	DrawRectangleRoundedLines(rectangle, 0.2f, 10, 2.5f, over ? SELECTED_COLOR : OUTLINE_COLOR);
 
 	if(over || inputs[id].input != "")
 		DrawTextEx(UiDef::font, inputs[id].input.c_str(), Vector2 {center.x - scale.x / 2.f + 15.f, center.y - scale.y / 2.f + 15.f}, fontSize, 1.5f, TEXT_COLOR);
@@ -90,10 +90,10 @@ void DrawInput(std::string id, Vector2 center, Vector2 scale = {GetScreenWidth()
 
 bool DrawButton(std::string text, Vector2 center, Vector2 scale = {GetScreenWidth() / 6.f, GetScreenHeight() / 10.f}, float fontSize = 30.f) {
 	Rectangle rectangle = Erl::GetCenterRectangle(center, scale);
-	DrawRectangleRec(rectangle, BACKGROUND_COLOR);
+	DrawRectangleRounded(rectangle, 0.2f, 10, BACKGROUND_COLOR);
 
 	bool hover = CheckCollisionPointRec(GetMousePosition(), rectangle);
-	DrawRectangleLinesEx(rectangle, 2.5f, hover ? SELECTED_COLOR : OUTLINE_COLOR);
+	DrawRectangleRoundedLines(rectangle, 0.2f, 10, 2.5f, hover ? SELECTED_COLOR : OUTLINE_COLOR);
 
 	DrawTextEx(UiDef::font, text.c_str(), Vector2 {center.x - scale.x / 2.f + 15.f, center.y - scale.y / 2.f + 15.f}, Erl::FontSize(fontSize), 1.5f, TEXT_COLOR);
 

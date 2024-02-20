@@ -172,8 +172,8 @@ void DrawEach(Element &element) {
 		UiDef::topBar.height
 	};
 
-	DrawRectangleRec(rectangle, WHITE);
-	DrawRectangleLinesEx(rectangle, 1.f, BLACK);
+	DrawRectangleRounded(rectangle, 0.1f, 10, WHITE);
+	DrawRectangleRoundedLines(Erl::RectangleExpanded(rectangle, {-2.f, -2.f}), 0.2f, 10, 1.f, CheckCollisionPointRec(GetMousePosition(), rectangle) ? GRAY : BLACK);
 
 	std::string text = element.name + (element.childs.empty() ? "" : " >");
 

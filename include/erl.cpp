@@ -7,6 +7,8 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
+#include <cstring>
+#include <sstream>
 
 #include <iostream>
 // Extended RayLib
@@ -106,20 +108,42 @@ namespace Erl {
 
 	// Draw smart text lines left
 	void DrawLinesSmartL(Font font, std::vector<std::string> lines, Vector2 position, float fontSize, float spacing, Color tint) {
-		float lineYSize = MeasureTextEx(font, lines[0].c_str(), fontSize, spacing).y;
+		float lineYSize;
+		if(lines.size() > 0)
+			lineYSize = MeasureTextEx(font, lines[0].c_str(), fontSize, spacing).y;
+		else
+			lineYSize = 1.f;
+		
 		float ySize = lineYSize * lines.size();
 
 		int index = 0;
 		for(float y = position.y; y < position.y + ySize; y += lineYSize) {
+			index = Clamp(index, 0, lines.size() - 1);
 			DrawTextEx(font, lines[index].c_str(), Vector2 {position.x, y}, fontSize, spacing, tint);
 			index++;
 		}
 	}
 
+	// Measures only the first line, and calculates the `returned.y` by: `firstLine.y * lines.size()`
+	// to high quality results please call hqMeasureTextExSmart
 	Vector2 MeasureTextExSmart(Font font, std::vector<std::string> lines, float fontSize, float spacing) {
 	    Vector2 lineMeasured = MeasureTextEx(font, lines[0].c_str(), fontSize, spacing);
 
 		return Vector2 {lineMeasured.x, lineMeasured.y * lines.size()};
+	}
+
+	// Measures the entire text and picks the maximum width for `returned.x`
+	Vector2 hqMeasureTextExSmart(Font font, std::vector<std::string> lines, float fontSize, float spacing) {
+	    float maxWidth = 0.f;
+		Vector2 lineMeasured;
+
+		for(std::string line : lines) {
+			lineMeasured = MeasureTextEx(font, line.c_str(), fontSize, spacing);
+			if(maxWidth < lineMeasured.x)
+				maxWidth = lineMeasured.x;
+		}
+
+		return Vector2 {maxWidth, lineMeasured.y * lines.size()};
 	}
 
 	Vector2 MeasureTextExSmart(Font font, std::string text, float fontSize, float spacing) {
@@ -140,51 +164,35 @@ namespace Erl {
 		return Vector2 {lineMeasured.x, lineMeasured.y * lines.size()};
 	}
 
+	/*
 	// Word wrap
+	// INFO: Bad word wrap ._.
 	std::vector<std::string> WordWrap(std::string text, Font font, float fontSize, float max = -1) {
-		if(max < 0)
+		if(!max)
 			max = GetScreenWidth();
-		std::vector<std::string> words;
-		std::string word = "";
-	    for (auto x : text) {
-	        if (x == ' ') {
-	            words.push_back(word);
-	            word = "";
-	        } else if(x == '\n') {
-	        	words.push_back(word + x);
-	        	word = "";
-	        } else {
-	            word = word + x;
-	        }
-	    }
-	    words.push_back(word);
-	    std::vector<std::string> output;
-	    std::string sentence = "";
-	    for(int index = 0; index < words.size(); index++) {
-	    	float measured = MeasureTextEx(font, (sentence + words[index] + " ").c_str(), fontSize, 0.1f).x;
-	    	if(measured >= max) {
-	    		output.push_back(sentence);
-	    		sentence = "";
-	    	} else if(words[index].back() == '\n') {
-	    		output.push_back(sentence + (words[index].substr(0, words[index].length() - 1)));
-	    		sentence = "";
-	    		continue;
-	    	}
-	    	sentence += words[index] + " ";
-	    }
-	    output.push_back(sentence);
-	    return output;
-	}
 
-	// Draws text word wrapped center
-	void DrawTextWrappedC(Font font, std::string text, Vector2 position, float fontSize, float spacing, Color tint, float margin = 0) {
-		DrawLinesSmartC(font, WordWrap(text, font, fontSize, margin), position, fontSize, spacing, tint);
-	}
+		std::vector<std::string> output = {};
+		std::string current;
+		int index = 0;
+		for(char character : text) {
+			if(character == '\n' || index == text.length() - 1) {
+				output.push_back(current);
+				current = "";
+				continue;
+			}
 
-	// Draws text word wrapped left
-	void DrawTextWrappedL(Font font, std::string text, Vector2 position, float fontSize, float spacing, Color tint, float margin = 0) {
-		DrawLinesSmartL(font, WordWrap(text, font, fontSize, margin), position, fontSize, spacing, tint);
+			if(MeasureTextEx(font, (current + character + ' ').c_str(), fontSize, 1.f).x >= max) {
+				std::string suffix = current.substr(current.find_last_of(' '));
+				output.push_back(current.substr(0, current.length() - suffix.length()));
+				current = suffix;
+			}
+
+			current += character;
+		}
+		if(output.empty()) output.emplace_back();
+		return output;
 	}
+	*/
 
 	// https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
 	bool _HasEnding(std::string const &fullString, std::string const &ending) {
@@ -286,6 +294,49 @@ namespace Erl {
 			scale.x,
 			scale.y
 		};
+	}
+
+	std::vector<std::string> WordWrap(const std::string& inputString, Font font, float fontSize, float max = -1) {
+		if(!max)
+			max = GetScreenWidth();
+
+		Vector2 charSize = MeasureTextEx(font, "A", fontSize, 1.f);
+
+		std::istringstream iss(inputString);
+
+		std::vector<std::string> outputString;
+		std::string line;
+
+		do {
+			std::string word;
+			iss >> word;
+
+			std::cout << word << std::endl;
+			if ((line.length() + word.length()) * charSize.x > max)
+			{
+				outputString.push_back(line);
+				line.clear();
+			}
+			line += word + " ";
+
+		} while (iss);
+
+		if (!line.empty())
+		{
+			outputString.push_back(line);
+		}
+
+		return outputString;
+	}
+
+	// Draws text word wrapped center
+	void DrawTextWrappedC(Font font, std::string text, Vector2 position, float fontSize, float spacing, Color tint, float margin = 0) {
+		DrawLinesSmartC(font, WordWrap(text, font, fontSize, margin), position, fontSize, spacing, tint);
+	}
+
+	// Draws text word wrapped left
+	void DrawTextWrappedL(Font font, std::string text, Vector2 position, float fontSize, float spacing, Color tint, float margin = 0) {
+		DrawLinesSmartL(font, WordWrap(text, font, fontSize, margin), position, fontSize, spacing, tint);
 	}
 }
 
